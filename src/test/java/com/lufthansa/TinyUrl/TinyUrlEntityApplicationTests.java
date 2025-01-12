@@ -7,7 +7,7 @@ import org.springframework.boot.test.context.SpringBootTest;
 @SpringBootTest
 @Disabled
 
-class TinyUrlApplicationTests {
+class TinyUrlEntityApplicationTests {
 
 	@Test
 	void contextLoads() {
