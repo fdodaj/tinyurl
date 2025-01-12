@@ -1,0 +1,41 @@
+spring:
+  datasource:
+    url: jdbc:postgresql://localhost:5432/TinyUrl
+    username: postgres
+    password: root
+    driver-class-name: org.postgresql.Driver
+  jpa:
+    database-platform: org.hibernate.dialect.PostgreSQLDialect
+    hibernate:
+      ddl-auto: update
+    show-sql: true
+    properties:
+      hibernate:
+        format_sql: true
+
+# Server Configuration (Optional)
+server:
+  port: 8080
+
+application:
+  security:
+    jwt:
+      secret-key: ygj2342jhjh234j2h342j3h
+
+  application:
+    security:
+      jwt:
+        expiration: 3600
+
+
+springdoc:
+  swagger-ui:
+    show-extensions: true
+    show-common-extensions: true
+    path: /swagger-ui.html
+    disable-swagger-default-url: true
+    enabled: true
+  api-docs:
+    path: /v3/api-docs
+    enabled: true
+  packages-to-scan: com.lufthansa.TinyUrl.controller
