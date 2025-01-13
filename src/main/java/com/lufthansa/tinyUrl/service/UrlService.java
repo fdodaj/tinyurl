@@ -1,17 +1,21 @@
 package com.lufthansa.tinyUrl.service;
 
-import com.lufthansa.tinyUrl.dto.RegisterRequest;
+import com.lufthansa.tinyUrl.converter.UrlConverter;
+import com.lufthansa.tinyUrl.dto.CreateShortUrlRequest;
+import com.lufthansa.tinyUrl.dto.UrlDto;
 import com.lufthansa.tinyUrl.entity.ClickActivity;
 import com.lufthansa.tinyUrl.entity.ClickActivityId;
 import com.lufthansa.tinyUrl.entity.UrlEntity;
 import com.lufthansa.tinyUrl.entity.UserEntity;
 import com.lufthansa.tinyUrl.repository.ClickActivityRepository;
 import com.lufthansa.tinyUrl.repository.UrlRepository;
+import com.lufthansa.tinyUrl.utils.UrlNotFoundException;
+import com.lufthansa.tinyUrl.utils.Utils;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
-import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
@@ -23,84 +27,48 @@ public class UrlService {
 
     private final UrlRepository urlRepository;
     private final ClickActivityRepository clickActivityRepository;
-    private final UserService userService;
+    private final UrlConverter urlConverter;
+    private final Utils utils;
 
-    @Value("${expiration-time:300}")
+    @Value("${expiration-time}")
     private Long expirationTime;
 
-    public UrlService(UrlRepository urlRepository, ClickActivityRepository clickActivityRepository, UserService userService) {
+
+    public UrlService(UrlRepository urlRepository,
+                      ClickActivityRepository clickActivityRepository,
+                      UrlConverter urlConverter,
+                      Utils utils) {
         this.urlRepository = urlRepository;
         this.clickActivityRepository = clickActivityRepository;
-        this.userService = userService;
+        this.urlConverter = urlConverter;
+        this.utils = utils;
     }
 
-    // Save a URL and associate it with the authenticated user
-    public UrlEntity save(String longUrl) {
-        String username = SecurityContextHolder.getContext().getAuthentication().getName();
-        Optional<UserEntity> userOptional = userService.findByUsername(username);
-
-        if (userOptional.isEmpty()) {
-            RegisterRequest registerRequest = new RegisterRequest();
-            registerRequest.setUsername(username);
-            registerRequest.setPassword("default_password");  // Set a default password or handle it appropriately
-            userService.registerUser(registerRequest);
-
-            userOptional = userService.findByUsername(username);
-        }
-
-        UserEntity user = userOptional.get();
-
-        Optional<UrlEntity> optionalUrl = urlRepository.findByLongUrl(longUrl);
+    public UrlDto shortenUrl(CreateShortUrlRequest request) {
+        UrlEntity urlEntity;
+        Optional<UrlEntity> optionalUrl = urlRepository.findByLongUrl(request.getLongUrl());
         if (optionalUrl.isPresent()) {
-            UrlEntity existingUrl = optionalUrl.get();
-            existingUrl.setExpirationTime(LocalDateTime.now().plusMinutes(10)); // Reset expiration time
-            existingUrl.setUser(user); // Associate the user with the existing URL
-            return urlRepository.save(existingUrl);
-        }
-
-        UrlEntity urlEntity = new UrlEntity();
-        urlEntity.setLongUrl(longUrl);
-        urlEntity.setShortUrl(UrlShortenerUtil.generateShortURL());  // Generate the short URL
-        urlEntity.setExpirationTime(LocalDateTime.now().plusMinutes(10));  // Set expiration time to 10 minutes
-        urlEntity.setUser(user);  // Associate the user with the new URL
-
-        return urlRepository.save(urlEntity);
-    }
-
-    // Method to get the long URL and increment the click count for the authenticated user
-    public String getLongUrlAndIncrementClicks(String shortUrl) {
-        // Get the authenticated username
-        String username = SecurityContextHolder.getContext().getAuthentication().getName();
-
-        // Retrieve user by username
-        Optional<UserEntity> userOptional = userService.findByUsername(username);
-        if (userOptional.isEmpty()) {
-            return "User not found"; // If user doesn't exist, return error message
-        }
-
-        Long userId = userOptional.get().getId(); // Get user ID
-
-        // Retrieve the long URL and increment click count
-        Optional<UrlEntity> urlEntityOptional = urlRepository.findByShortUrl(shortUrl);
-        if (urlEntityOptional.isPresent()) {
-            UrlEntity urlEntity = urlEntityOptional.get();
-            String longUrl = urlEntity.getLongUrl();
-
-            // Increment the click count
-            incrementClickCount(userId, urlEntity.getId());
-
-            return longUrl; // Return the long URL if found
+            urlEntity = optionalUrl.get();
+            urlEntity.setExpirationTime(LocalDateTime.now().plusSeconds(expirationTime));
+            urlRepository.save(urlEntity);
+            return urlConverter.toDto(urlEntity);
         } else {
-            return "Short URL not found"; // Return error message if URL not found
+            urlEntity = urlConverter.toEntity(request);
+            UrlEntity saved = urlRepository.save(urlEntity);
+            return urlConverter.toDto(saved);
         }
     }
 
-    // Method to find a URL by short URL
-    public Optional<UrlEntity> findUrlByShortUrl(String shortUrl) {
-        return urlRepository.findByShortUrl(shortUrl);
+    public UrlDto retrieveShortenUrl(String shortUrl) {
+        UrlEntity urlEntity = urlRepository.findByShortUrl(shortUrl).orElseThrow(
+                () -> new UrlNotFoundException("Url not found " + shortUrl));
+
+        UserEntity loggedInUser = utils.getLoggedInUser();
+        incrementClickCount(loggedInUser.getId(), urlEntity.getId());
+        return urlConverter.toDto(urlEntity);
     }
 
-    // Method to increment the click count for a specific URL and user
+
     public void incrementClickCount(Long userId, Long urlId) {
         Optional<ClickActivity> clickActivityOptional = clickActivityRepository.findById(new ClickActivityId(userId, urlId));
 
@@ -109,7 +77,6 @@ public class UrlService {
             clickActivity.setClickCount(clickActivity.getClickCount() + 1);
             clickActivityRepository.save(clickActivity);
         } else {
-            // If no record exists, create a new ClickActivity record with a click count of 1
             ClickActivity newClickActivity = new ClickActivity();
             ClickActivityId clickActivityId = new ClickActivityId(userId, urlId);
             newClickActivity.setId(clickActivityId);
@@ -118,7 +85,7 @@ public class UrlService {
             Optional<UrlEntity> urlEntityOptional = urlRepository.findById(urlId);
             urlEntityOptional.ifPresent(newClickActivity::setUrl);
 
-            UserEntity userEntity = new UserEntity();  // Fetch this from the UserRepository or service
+            UserEntity userEntity = new UserEntity();
             userEntity.setId(userId);
             newClickActivity.setUser(userEntity);
 
@@ -126,10 +93,26 @@ public class UrlService {
         }
     }
 
-    // Method to get all URLs with pagination
+    @Scheduled(fixedRateString = "${task.schedule.rate}")
+    public void deleteExpiredUrls() {
+        LocalDateTime now = LocalDateTime.now();
+        List<UrlEntity> expiredUrls = urlRepository.getExpiredUrls(now);
+        expiredUrls.forEach(urlEntity -> urlEntity.setStatus("DELETED"));
+        urlRepository.saveAll(expiredUrls);
+
+    }
+
     public List<UrlEntity> getAllUrls(int page, int size) {
         Pageable pageable = PageRequest.of(page, size);
         Page<UrlEntity> urlPage = urlRepository.findAll(pageable);
         return urlPage.getContent();
+    }
+
+    public UrlDto renewUrlExpiration(String shortUrl) {
+        UrlEntity urlEntity = urlRepository.findByShortUrl(shortUrl)
+                .orElseThrow(() -> new UrlNotFoundException("Url not found " + shortUrl));
+        urlEntity.setExpirationTime(LocalDateTime.now().plusSeconds(expirationTime));
+        urlRepository.save(urlEntity);
+        return urlConverter.toDto(urlEntity);
     }
 }

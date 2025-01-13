@@ -43,3 +43,9 @@ springdoc:
     path: /v3/api-docs
     enabled: true
   packages-to-scan: com.lufthansa.TinyUrl.controller
+
+expiration-time: 300
+
+batch:
+  schedule:
+    rate: 300000

@@ -1,4 +1,4 @@
-package com.lufthansa.tinyUrl.service;
+package com.lufthansa.tinyUrl.utils;
 
 import java.util.Random;
 

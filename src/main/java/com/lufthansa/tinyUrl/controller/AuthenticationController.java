@@ -34,7 +34,7 @@ public class AuthenticationController {
         String token = authService.authenticateUser(loginRequest);
 
         if (token.equals("User not found!") || token.equals("Invalid password!")) {
-            return ResponseEntity.status(401).body(token); // Unauthorized
+            return ResponseEntity.status(401).body(token);
         }
 
         return ResponseEntity.ok(token);

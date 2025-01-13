@@ -1,11 +1,12 @@
 package com.lufthansa.tinyUrl.controller;
 
 
+import com.lufthansa.tinyUrl.dto.CreateShortUrlRequest;
+import com.lufthansa.tinyUrl.dto.UrlDto;
 import com.lufthansa.tinyUrl.entity.UrlEntity;
 import com.lufthansa.tinyUrl.service.UrlService;
 import com.lufthansa.tinyUrl.service.UserService;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -26,28 +27,27 @@ public class UrlController {
         this.userService = userService;
     }
 
+    /**
+     * Shorten a long url
+     *
+     * @param request CreateShortUrlRequest
+     * @return UrlDto
+     */
     @PostMapping("/shorten")
-    public ResponseEntity<UrlEntity> saveNewURL(@RequestParam(name = "url") String url) {
-        UrlEntity savedUrlEntity = urlService.save(url);
-        return ResponseEntity.ok(savedUrlEntity);
+    public ResponseEntity<UrlDto> shortenUrl(@RequestBody CreateShortUrlRequest request) {
+        UrlDto shortenedUrl = urlService.shortenUrl(request);
+        return ResponseEntity.ok(shortenedUrl);
     }
 
 
     /**
-     * Endpoint to retrieve the long URL based on the short URL.
-     *
-     * @param shortUrl The short URL to look up.
-     * @return The long URL, or a 404 if not found.
+     * Retrieve a long url from a short input
+     * @param shortUrl shortUrl
+     * @return
      */
     @GetMapping("/{shortUrl}")
-    public ResponseEntity<String> click(@PathVariable String shortUrl) {
-        String longUrl = urlService.getLongUrlAndIncrementClicks(shortUrl);
-        if (longUrl.equals("User not found")) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("User not found");
-        } else if (longUrl.equals("Short URL not found")) {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Short URL not found");
-        }
-        return ResponseEntity.ok(longUrl);
+    public ResponseEntity<UrlDto> retrieveLongUrl(@PathVariable String shortUrl) {
+        return ResponseEntity.ok(urlService.retrieveShortenUrl(shortUrl));
     }
 
 
@@ -58,11 +58,10 @@ public class UrlController {
         return ResponseEntity.ok(UrlEntities);
     }
 
-//    @PutMapping("/urls/renew")
-//    public ResponseEntity<String> renewUrlExpiration(
-//            @RequestParam String shortUrl,
-//            @RequestParam int expirationTime) {
-//        String renewedUrl = urlService.renewUrlExpiration(shortUrl, expirationTime);
-//        return ResponseEntity.ok("Expiration renewed for URL: " + renewedUrl);
-//    }
+    @PutMapping("/urls/renew")
+    public ResponseEntity<UrlDto> renewUrlExpiration(
+            @RequestParam String shortUrl) {
+        UrlDto urlDto = urlService.renewUrlExpiration(shortUrl);
+        return ResponseEntity.ok(urlDto);
+    }
 }

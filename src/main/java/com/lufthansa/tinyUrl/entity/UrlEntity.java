@@ -5,14 +5,15 @@ import jakarta.persistence.*;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
+import org.hibernate.annotations.SQLRestriction;
 
 import java.time.LocalDateTime;
-import java.util.ArrayList;
 import java.util.List;
 
 
 @Entity
 @Table(name = "url", schema = "public")
+@SQLRestriction("status <> 'DELETED'")
 public class UrlEntity  {
 
     @Id
@@ -34,6 +35,9 @@ public class UrlEntity  {
     @Column(name = "expiration_time", nullable = false)
     private LocalDateTime expirationTime;
 
+    @Column(name = "status")
+    private String status;
+
 
     @ManyToOne
     @JoinColumn(name = "user_id")
@@ -41,7 +45,7 @@ public class UrlEntity  {
 
     @OneToMany(mappedBy = "url", cascade = CascadeType.ALL, orphanRemoval = true)
     @JsonManagedReference
-    private List<ClickActivity> clickActivities = new ArrayList<>();
+    private List<ClickActivity> clickActivities;
 
     public UrlEntity() {
     }
@@ -94,5 +98,13 @@ public class UrlEntity  {
 
     public void setClickActivities(List<ClickActivity> clickActivities) {
         this.clickActivities = clickActivities;
+    }
+
+    public String getStatus() {
+        return status;
+    }
+
+    public void setStatus(String status) {
+        this.status = status;
     }
 }
