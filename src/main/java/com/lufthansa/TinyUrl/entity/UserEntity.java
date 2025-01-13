@@ -1,9 +1,9 @@
 package com.lufthansa.TinyUrl.entity;
 
 
+import com.fasterxml.jackson.annotation.JsonManagedReference;
 import jakarta.persistence.*;
 
-import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -21,6 +21,7 @@ public class UserEntity {
     private String userRole;
 
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
+    @JsonManagedReference
     private List<ClickActivity> clickActivities = new ArrayList<>();
 
     public UserEntity(String username, String password) {

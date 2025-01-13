@@ -1,11 +1,15 @@
 package com.lufthansa.TinyUrl.controller;
 
 
+import com.lufthansa.TinyUrl.dto.RegisterRequest;
 import com.lufthansa.TinyUrl.entity.UrlEntity;
+import com.lufthansa.TinyUrl.entity.UserEntity;
 import com.lufthansa.TinyUrl.service.UrlService;
+import com.lufthansa.TinyUrl.service.UserService;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -16,19 +20,21 @@ import java.util.Optional;
 public class UrlController {
 
     private final UrlService urlService;
+    private final UserService userService;
 
     @Value("${expiration-time:300}")
     private long expirationTime;
 
-    public UrlController(UrlService urlService) {
+    public UrlController(UrlService urlService, UserService userService) {
         this.urlService = urlService;
+        this.userService = userService;
     }
 
     @PostMapping("/shorten")
-    public ResponseEntity<UrlEntity> saveNewURL(@RequestParam(name = "url") String url){
-        return ResponseEntity.ok(urlService.save(url));
+    public ResponseEntity<UrlEntity> saveNewURL(@RequestParam(name = "url") String url) {
+        UrlEntity savedUrlEntity = urlService.save(url);
+        return ResponseEntity.ok(savedUrlEntity);
     }
-
 
 
     /**
@@ -38,24 +44,16 @@ public class UrlController {
      * @return The long URL, or a 404 if not found.
      */
     @GetMapping("/{shortUrl}")
-    public ResponseEntity<String> getLongUrl(@PathVariable String shortUrl,
-                                             @RequestParam Long userId) {
-        // Retrieve the long URL from the service
-        String longUrl = urlService.getLongUrl(shortUrl);
-        if (longUrl != null) {
-            // Increment the click count for this user and URL
-            Optional<UrlEntity> urlEntityOptional = urlService.findUrlByShortUrl(shortUrl);
-            if (urlEntityOptional.isPresent()) {
-                Long urlId = urlEntityOptional.get().getId();
-                urlService.incrementClickCount(userId, urlId); // Call incrementClickCount
-                return ResponseEntity.ok(longUrl);
-            } else {
-                return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Short URL not found");
-            }
-        } else {
+    public ResponseEntity<String> click(@PathVariable String shortUrl) {
+        String longUrl = urlService.getLongUrlAndIncrementClicks(shortUrl);
+        if (longUrl.equals("User not found")) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("User not found");
+        } else if (longUrl.equals("Short URL not found")) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Short URL not found");
         }
+        return ResponseEntity.ok(longUrl);
     }
+
 
     @GetMapping
     public ResponseEntity<List<UrlEntity>> getAllUrls(@RequestParam(value = "page", defaultValue = "0") int page,

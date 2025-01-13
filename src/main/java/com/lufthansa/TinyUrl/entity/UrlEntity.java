@@ -36,15 +36,23 @@ public class UrlEntity  {
     private LocalDateTime expirationTime;
 
 
-//    @ManyToOne
-//    @JoinColumn(name = "user_id")
-//    private UserEntity user;
+    @ManyToOne
+    @JoinColumn(name = "user_id")
+    private UserEntity user;
 
     @OneToMany(mappedBy = "url", cascade = CascadeType.ALL, orphanRemoval = true)
     @JsonManagedReference
     private List<ClickActivity> clickActivities = new ArrayList<>();
 
     public UrlEntity() {
+    }
+
+    public UserEntity getUser() {
+        return user;
+    }
+
+    public void setUser(UserEntity user) {
+        this.user = user;
     }
 
     public Long getId() {

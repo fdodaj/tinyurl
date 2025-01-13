@@ -7,9 +7,6 @@ import org.springframework.stereotype.Component;
 @Component
 public class UrlConverter {
 
-
-
-
     public  UrlResponse convertToUrlResponse(UrlEntity urlEntity) {
         UrlResponse urlResponse = new UrlResponse();
         urlResponse.setLongUrl(urlEntity.getLongUrl());

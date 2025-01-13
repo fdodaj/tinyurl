@@ -6,6 +6,8 @@ import com.lufthansa.TinyUrl.repository.UserRepository;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
+import java.util.Optional;
+
 @Service
 public class AuthService {
 
@@ -20,15 +22,24 @@ public class AuthService {
     }
 
     public String authenticateUser(LoginRequest loginRequest) {
-        UserEntity user = userRepository.findByUsername(loginRequest.getUsername());
-        if (user == null) {
+        // Retrieve the user wrapped in Optional
+        Optional<UserEntity> userOptional = userRepository.findByUsername(loginRequest.getUsername());
+
+        // If the user is not found, return an error message
+        if (userOptional.isEmpty()) {
             return "User not found!";
         }
 
+        // Get the user entity from the Optional
+        UserEntity user = userOptional.get();
+
+        // Check if the password matches
         if (!passwordEncoder.matches(loginRequest.getPassword(), user.getPassword())) {
             return "Invalid password!";
         }
 
+        // Generate and return the JWT token
         return jwtUtil.generateToken(user.getUsername());
     }
+
 }

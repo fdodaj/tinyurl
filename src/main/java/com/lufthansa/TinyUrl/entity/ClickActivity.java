@@ -15,22 +15,24 @@ public class ClickActivity {
 
     @ManyToOne
     @MapsId("userId")
+    @JsonBackReference
     private UserEntity user;
 
     @ManyToOne
     @MapsId("urlId")
     @JoinColumn(name = "url_id", insertable = false, updatable = false)
+    @JsonBackReference
     private UrlEntity url;
 
-    private String clickCount;
+    private Integer clickCount;
 
     private LocalDateTime clickTimestamp;
 
-    public String getClickCount() {
+    public Integer getClickCount() {
         return clickCount;
     }
 
-    public void setClickCount(String clickCount) {
+    public void setClickCount(Integer clickCount) {
         this.clickCount = clickCount;
     }
 
