@@ -12,16 +12,15 @@ public class ClickActivity  {
     private ClickActivityId id;
 
     @ManyToOne
-    @JoinColumn(name = "url_id", nullable = false, insertable = false, updatable = false)
-    private UrlEntity url;
-
-
-    @Column(nullable = false)
-    private Integer clickCount = 0;
+    @MapsId("userId")
+    private UserEntity user;
 
     @ManyToOne
-    @JoinColumn(name = "url_id", nullable = false, insertable = false, updatable = false)
-    private UserEntity user;
+    @MapsId("urlId")
+    private UrlEntity url;
+
+    @Column(name = "click_count")
+    private Long clickCount = 0L;
 
     public ClickActivityId getId() {
         return id;
@@ -39,11 +38,12 @@ public class ClickActivity  {
         this.url = url;
     }
 
-    public Integer getClickCount() {
+
+    public Long getClickCount() {
         return clickCount;
     }
 
-    public void setClickCount(Integer clickCount) {
+    public void setClickCount(Long clickCount) {
         this.clickCount = clickCount;
     }
 

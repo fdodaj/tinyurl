@@ -37,5 +37,13 @@ public class ClickActivityId implements Serializable {
     public void setUrlId(Long urlId) {
         this.urlId = urlId;
     }
+
+    public ClickActivityId(Long userId, Long urlId) {
+        this.userId = userId;
+        this.urlId = urlId;
+    }
+
+    public ClickActivityId() {
+    }
 }
 
