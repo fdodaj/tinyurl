@@ -21,5 +21,21 @@ public class ClickActivityId implements Serializable {
 
     @Column(name = "url_id")
     private Long urlId;
+
+    public Long getUserId() {
+        return userId;
+    }
+
+    public void setUserId(Long userId) {
+        this.userId = userId;
+    }
+
+    public Long getUrlId() {
+        return urlId;
+    }
+
+    public void setUrlId(Long urlId) {
+        this.urlId = urlId;
+    }
 }
 
