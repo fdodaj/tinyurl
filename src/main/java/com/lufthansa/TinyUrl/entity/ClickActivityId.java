@@ -12,15 +12,13 @@ import java.io.Serializable;
 
 @Getter
 @Setter
-@Embeddable
 @EqualsAndHashCode
+@Embeddable
 public class ClickActivityId implements Serializable {
-
-    @Column(name = "user_id")
     private Long userId;
-
-    @Column(name = "url_id")
     private Long urlId;
+
+
 
     public Long getUserId() {
         return userId;
@@ -44,6 +42,7 @@ public class ClickActivityId implements Serializable {
     }
 
     public ClickActivityId() {
+
     }
 }
 

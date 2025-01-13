@@ -1,5 +1,6 @@
 package com.lufthansa.TinyUrl.entity;
 
+import com.fasterxml.jackson.annotation.JsonManagedReference;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
@@ -7,6 +8,7 @@ import jakarta.validation.constraints.Size;
 import lombok.Builder;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
 
 
@@ -39,8 +41,8 @@ public class UrlEntity  {
 //    private UserEntity user;
 
     @OneToMany(mappedBy = "url", cascade = CascadeType.ALL, orphanRemoval = true)
-    private List<ClickActivity> clickActivities;
-
+    @JsonManagedReference
+    private List<ClickActivity> clickActivities = new ArrayList<>();
 
     public UrlEntity() {
     }

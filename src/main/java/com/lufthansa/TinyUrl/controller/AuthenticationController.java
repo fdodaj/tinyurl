@@ -1,6 +1,12 @@
 package com.lufthansa.TinyUrl.controller;
 
+import com.lufthansa.TinyUrl.dto.LoginRequest;
+import com.lufthansa.TinyUrl.dto.RegisterRequest;
+import com.lufthansa.TinyUrl.security.AuthService;
+import com.lufthansa.TinyUrl.service.UserService;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
@@ -8,28 +14,26 @@ import org.springframework.web.bind.annotation.*;
 @Slf4j
 public class AuthenticationController {
 
-//    private final JwtTokenUtil jwtTokenUtil;
-//    private final UserService userService;
-//    private final PasswordEncoder passwordEncoder;
-//
-//    public AuthenticationController(JwtTokenUtil jwtTokenUtil, UserService userService, PasswordEncoder passwordEncoder) {
-//        this.jwtTokenUtil = jwtTokenUtil;
-//        this.userService = userService;
-//        this.passwordEncoder = passwordEncoder;
-//    }
-//
-//    @PostMapping("/login")
-//    public String login(@RequestBody LoginRequest loginRequest) {
-//        var user = userService.findByUsername(loginRequest.getUsername());
-//        if (user != null && passwordEncoder.matches(loginRequest.getPassword(), user.getPassword())) {
-//            return jwtTokenUtil.generateToken(loginRequest.getUsername());
-//        }
-//        throw new RuntimeException("Invalid username or password");
-//    }
-//
-//    @PostMapping("/register")
-//    public ResponseEntity<String> registerUser(@Valid @RequestBody UserEntity userRegistrationDto) {
-//        userService.registerUser(userRegistrationDto);
-//        return new ResponseEntity<>("User registered successfully", HttpStatus.CREATED);
-//    }
+    @Autowired
+    private UserService userService;
+
+    @Autowired
+    private AuthService authService;
+
+    @PostMapping("/register")
+    public ResponseEntity<String> register(@RequestBody RegisterRequest registerRequest) {
+        String message = userService.registerUser(registerRequest);
+        return ResponseEntity.ok(message);
+    }
+
+    @PostMapping("/login")
+    public ResponseEntity<String> login(@RequestBody LoginRequest loginRequest) {
+        String token = authService.authenticateUser(loginRequest);
+
+        if (token.equals("User not found!") || token.equals("Invalid password!")) {
+            return ResponseEntity.status(401).body(token); // Unauthorized
+        }
+
+        return ResponseEntity.ok(token);
+    }
 }

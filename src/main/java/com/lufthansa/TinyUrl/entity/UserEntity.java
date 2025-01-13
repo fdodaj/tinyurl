@@ -4,6 +4,8 @@ package com.lufthansa.TinyUrl.entity;
 import jakarta.persistence.*;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
 
 
 @Entity
@@ -16,17 +18,34 @@ public class UserEntity {
 
     private String username;
     private String password;
+    private String userRole;
 
+    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<ClickActivity> clickActivities = new ArrayList<>();
 
     public UserEntity(String username, String password) {
         this.username = username;
         this.password = password;
     }
 
+    public List<ClickActivity> getClickActivities() {
+        return clickActivities;
+    }
 
+    public void setClickActivities(List<ClickActivity> clickActivities) {
+        this.clickActivities = clickActivities;
+    }
 
     public UserEntity() {
 
+    }
+
+    public String getUserRole() {
+        return userRole;
+    }
+
+    public void setUserRole(String userRole) {
+        this.userRole = userRole;
     }
 
     public Long getId() {

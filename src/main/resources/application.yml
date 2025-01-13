@@ -27,6 +27,10 @@ application:
       jwt:
         expiration: 3600
 
+jwt:
+  secret: your-secret-key
+  expiration: 3600000
+
 
 springdoc:
   swagger-ui:

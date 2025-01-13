@@ -75,7 +75,7 @@ public class UrlService {
             ClickActivity newClickActivity = new ClickActivity();
             ClickActivityId clickActivityId = new ClickActivityId(userId, urlId);
             newClickActivity.setId(clickActivityId);
-            newClickActivity.setClickCount(1L);
+            newClickActivity.setClickCount(String.valueOf(1));
 
             // Set the related URL entity (optional, if needed for more associations)
             Optional<UrlEntity> urlEntityOptional = urlRepository.findById(urlId);

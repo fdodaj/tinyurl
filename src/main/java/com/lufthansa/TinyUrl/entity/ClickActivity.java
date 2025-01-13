@@ -1,13 +1,15 @@
 package com.lufthansa.TinyUrl.entity;
 
 
+import com.fasterxml.jackson.annotation.JsonBackReference;
 import jakarta.persistence.*;
+
+import java.time.LocalDateTime;
 
 
 @Entity
 @Table(name = "click_activity")
-public class ClickActivity  {
-
+public class ClickActivity {
     @EmbeddedId
     private ClickActivityId id;
 
@@ -17,10 +19,20 @@ public class ClickActivity  {
 
     @ManyToOne
     @MapsId("urlId")
+    @JoinColumn(name = "url_id", insertable = false, updatable = false)
     private UrlEntity url;
 
-    @Column(name = "click_count")
-    private Long clickCount = 0L;
+    private String clickCount;
+
+    private LocalDateTime clickTimestamp;
+
+    public String getClickCount() {
+        return clickCount;
+    }
+
+    public void setClickCount(String clickCount) {
+        this.clickCount = clickCount;
+    }
 
     public ClickActivityId getId() {
         return id;
@@ -28,6 +40,14 @@ public class ClickActivity  {
 
     public void setId(ClickActivityId id) {
         this.id = id;
+    }
+
+    public UserEntity getUser() {
+        return user;
+    }
+
+    public void setUser(UserEntity user) {
+        this.user = user;
     }
 
     public UrlEntity getUrl() {
@@ -38,20 +58,11 @@ public class ClickActivity  {
         this.url = url;
     }
 
-
-    public Long getClickCount() {
-        return clickCount;
+    public LocalDateTime getClickTimestamp() {
+        return clickTimestamp;
     }
 
-    public void setClickCount(Long clickCount) {
-        this.clickCount = clickCount;
-    }
-
-    public UserEntity getUser() {
-        return user;
-    }
-
-    public void setUser(UserEntity user) {
-        this.user = user;
+    public void setClickTimestamp(LocalDateTime clickTimestamp) {
+        this.clickTimestamp = clickTimestamp;
     }
 }
