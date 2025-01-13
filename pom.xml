@@ -11,14 +11,14 @@
     </parent>
 
     <groupId>com.lufthansa</groupId>
-    <artifactId>TinyUrl</artifactId>
+    <artifactId>tinyUrl</artifactId>
     <version>0.0.1-SNAPSHOT</version>
-    <name>TinyUrl</name>
+    <name>tinyUrl</name>
     <description>A Spring Boot app for shortening URLs, with JWT authentication, configurable expiration times, click
         tracking, and simple REST APIs</description>
 
     <properties>
-        <java.version>21</java.version>
+        <java.version>17</java.version>
     </properties>
 
     <dependencies>
