@@ -34,7 +34,7 @@ The TinyURL project is a URL shortening service that allows users to generate sh
 
 ## Technologies Used
 
-- **Java 21**
+- **Java 17**
 - **Spring Boot**
 - **PostgreSQL**
 - **Maven**
@@ -51,7 +51,6 @@ The TinyURL project is a URL shortening service that allows users to generate sh
 - Java 21
 - Maven
 - PostgreSQL
-- An IDE like IntelliJ IDEA
 
 ### Steps
 
